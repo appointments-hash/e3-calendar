@@ -1,0 +1,1112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#111111" />
+  <title>E³ Calendar Manager</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.webmanifest">
+
+  <!-- iOS PWA-ish -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+
+  <!-- iOS splash screens (placeholders included) -->
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-1170-2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-1284-2778.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-1125-2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-1242-2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-750-1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-828-1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-1290-2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-1179-2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
+
+  <style>
+    :root{
+      --bg:#0b0b0b;
+      --panel:#121212;
+      --panel2:#181818;
+      --text:#f2f2f2;
+      --muted:#a8a8a8;
+      --border:#262626;
+      --gold:#d4af37;
+      --gold2:#f4d03f;
+      --danger:#ff5c5c;
+      --ok:#36d17a;
+      --warn:#f4d03f;
+      --radius:16px;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --tap: rgba(212,175,55,.16);
+      --maxw: 1080px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; background:var(--bg); color:var(--text); font-family:var(--font); margin:0; }
+    a{ color:inherit; text-decoration:none; }
+    button, input, select, textarea{ font:inherit; }
+    .wrap{ max-width:var(--maxw); margin:0 auto; padding:18px 16px 92px; }
+    .topbar{
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(12px);
+      background: linear-gradient(to bottom, rgba(11,11,11,.92), rgba(11,11,11,.70));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .topbar-inner{
+      max-width:var(--maxw);
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 16px;
+      gap:12px;
+    }
+    .brand{ display:flex; align-items:center; gap:10px; }
+    .logo{
+      width:36px; height:36px; border-radius:12px;
+      background: radial-gradient(circle at 30% 30%, var(--gold2), var(--gold));
+      box-shadow: 0 12px 28px rgba(212,175,55,.20);
+    }
+    .brand h1{ font-size:15px; margin:0; letter-spacing:.4px; line-height:1.1; }
+    .brand .sub{ display:block; font-size:12px; color:var(--muted); margin-top:2px; }
+    .actions{ display:flex; gap:10px; align-items:center; }
+    .pill{
+      border:1px solid rgba(212,175,55,.35);
+      background: linear-gradient(to bottom, rgba(212,175,55,.18), rgba(212,175,55,.10));
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 999px;
+      display:inline-flex; gap:8px; align-items:center;
+      cursor:pointer;
+      transition: transform .08s ease, background .2s ease;
+    }
+    .pill:active{ transform: scale(.98); background: rgba(212,175,55,.22); }
+    .pill.secondary{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+    }
+    .status-dot{
+      width:8px; height:8px; border-radius:99px;
+      background: var(--danger);
+      box-shadow: 0 0 0 3px rgba(255,92,92,.15);
+    }
+    .status-dot.ok{
+      background: var(--ok);
+      box-shadow: 0 0 0 3px rgba(54,209,122,.15);
+    }
+    .grid{ display:grid; gap:14px; }
+    @media(min-width:920px){
+      .grid.cols-2{ grid-template-columns: 1.15fr .85fr; }
+    }
+    .card{
+      background: linear-gradient(to bottom, rgba(18,18,18,.96), rgba(12,12,12,.96));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    .card h2{ margin:0 0 10px; font-size:14px; letter-spacing:.3px; color: rgba(255,255,255,.92); }
+    .kpis{ display:grid; gap:12px; grid-template-columns: repeat(2,1fr); }
+    @media(min-width:620px){ .kpis{ grid-template-columns: repeat(4,1fr);} }
+    .kpi{
+      padding:12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      min-height:74px;
+    }
+    .kpi .label{ font-size:12px; color:var(--muted); }
+    .kpi .value{ font-size:22px; font-weight:650; margin-top:6px; letter-spacing:.2px; }
+    .kpi .value.gold{ color: var(--gold2); }
+    .list{ display:flex; flex-direction:column; gap:10px; }
+    .item{
+      display:flex; gap:12px; align-items:flex-start;
+      padding:12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      cursor:pointer;
+      transition: background .15s ease;
+    }
+    .item:active{ background: var(--tap); }
+    .cal-color{
+      width:10px; height:10px; border-radius:99px;
+      margin-top:4px; flex:0 0 auto;
+      box-shadow: 0 0 0 3px rgba(255,255,255,.06);
+    }
+    .item .meta{ flex:1; }
+    .item .title{ font-size:14px; margin:0; }
+    .item .sub{
+      margin-top:4px;
+      font-size:12px;
+      color: var(--muted);
+      display:flex; flex-wrap:wrap; gap:8px;
+    }
+    .badge{
+      font-size:11px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+    }
+    .badge.gold{ border-color: rgba(212,175,55,.32); background: rgba(212,175,55,.12); }
+    .badge.ok{ border-color: rgba(54,209,122,.25); background: rgba(54,209,122,.10); }
+    .badge.warn{ border-color: rgba(244,208,63,.28); background: rgba(244,208,63,.10); }
+    .badge.danger{ border-color: rgba(255,92,92,.28); background: rgba(255,92,92,.10); }
+
+    .toolbar{
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+      margin: 10px 0 14px;
+    }
+    .field{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .input, .select{
+      background: rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      outline:none;
+      min-width: 200px;
+    }
+    .input::placeholder{ color: rgba(255,255,255,.38); }
+
+    .nav{
+      position:fixed; left:0; right:0; bottom:0; z-index:30;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(11,11,11,.88);
+      backdrop-filter: blur(14px);
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .nav-inner{
+      max-width: var(--maxw);
+      margin:0 auto;
+      display:grid; grid-template-columns: repeat(4,1fr);
+      gap:10px;
+    }
+    .tab{
+      padding:12px 10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      color: rgba(255,255,255,.82);
+      text-align:center;
+      font-size:12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{
+      border-color: rgba(212,175,55,.40);
+      background: rgba(212,175,55,.12);
+      color: rgba(255,255,255,.95);
+    }
+    .fab{
+      position:fixed;
+      right: 16px;
+      bottom: 92px;
+      z-index:40;
+      width:56px; height:56px;
+      border-radius: 18px;
+      border:1px solid rgba(212,175,55,.45);
+      background: radial-gradient(circle at 30% 30%, var(--gold2), var(--gold));
+      color: #111;
+      font-weight: 800;
+      cursor:pointer;
+      box-shadow: 0 18px 40px rgba(212,175,55,.18);
+      display:flex; align-items:center; justify-content:center;
+    }
+
+    .modal-backdrop{
+      position:fixed; inset:0; z-index:60;
+      background: rgba(0,0,0,.55);
+      display:none; align-items:flex-end;
+    }
+    .modal{
+      width:100%;
+      max-width: var(--maxw);
+      margin: 0 auto;
+      border-radius: 22px 22px 0 0;
+      background: linear-gradient(to bottom, rgba(18,18,18,.98), rgba(12,12,12,.98));
+      border:1px solid rgba(255,255,255,.10);
+      padding:14px 14px 18px;
+      box-shadow: 0 25px 60px rgba(0,0,0,.55);
+    }
+    @media(min-width:720px){
+      .modal-backdrop{ align-items:center; padding: 24px; }
+      .modal{ border-radius: 22px; }
+    }
+    .modal-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+    .modal-title{ font-size:14px; margin:0; }
+    .close{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      color: var(--text);
+      border-radius: 12px;
+      padding:8px 10px;
+      cursor:pointer;
+    }
+    .form{ display:grid; gap:10px; }
+    .row{ display:grid; gap:10px; }
+    @media(min-width:720px){
+      .row.cols-2{ grid-template-columns: 1fr 1fr; }
+      .row.cols-3{ grid-template-columns: 1.2fr .8fr 1fr; }
+    }
+    label{ font-size:12px; color: var(--muted); display:block; margin:0 0 6px; }
+    .textarea{ min-height: 92px; resize: vertical; }
+    .btn{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+    }
+    .btn.primary{ border-color: rgba(212,175,55,.45); background: rgba(212,175,55,.14); }
+    .btn.danger{ border-color: rgba(255,92,92,.35); background: rgba(255,92,92,.12); }
+
+    .month{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+    .month .title{ font-size:14px; margin:0; }
+    .cal-grid{ display:grid; grid-template-columns: repeat(7,1fr); gap:8px; }
+    .dow{ font-size:11px; color: var(--muted); text-align:center; padding:6px 0; }
+    .day{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      border-radius: 14px;
+      padding:10px;
+      min-height: 74px;
+      cursor:pointer;
+    }
+    .day .n{ font-size:12px; color: rgba(255,255,255,.90); }
+    .dots{ display:flex; gap:4px; flex-wrap:wrap; margin-top:8px; }
+    .dot{ width:7px; height:7px; border-radius:99px; opacity:.95; }
+
+    .toast{
+      position:fixed;
+      left:50%; transform: translateX(-50%);
+      bottom: 86px;
+      z-index:80;
+      background: rgba(18,18,18,.92);
+      border:1px solid rgba(255,255,255,.12);
+      padding:10px 12px;
+      border-radius: 14px;
+      box-shadow: 0 16px 40px rgba(0,0,0,.5);
+      display:none;
+      max-width: 92vw;
+      color: rgba(255,255,255,.92);
+      font-size:12px;
+    }
+    .empty{ color: var(--muted); font-size:13px; padding: 10px 2px; }
+    .hidden{ display:none !important; }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>E³ Calendar Manager</h1>
+          <span class="sub">Black & Gold • Google Calendar control</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="installBtn" class="pill secondary hidden" title="Install">⬇︎ Install</button>
+        <button id="connectBtn" class="pill" title="Connect Google Calendar">
+          <span id="connDot" class="status-dot"></span>
+          <span id="connText">Not connected</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="view-dashboard" class="view">
+      <div class="card">
+        <h2>Dashboard</h2>
+        <div class="kpis">
+          <div class="kpi"><div class="label">Today</div><div class="value" id="kpiToday">—</div></div>
+          <div class="kpi"><div class="label">This Week</div><div class="value" id="kpiWeek">—</div></div>
+          <div class="kpi"><div class="label">This Month</div><div class="value" id="kpiMonth">—</div></div>
+          <div class="kpi"><div class="label">Connected Calendars</div><div class="value gold" id="kpiCals">—</div></div>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:14px;">
+        <div class="card">
+          <h2>Upcoming</h2>
+          <div id="upcomingList" class="list"></div>
+          <div id="upcomingEmpty" class="empty hidden">No upcoming appointments found.</div>
+        </div>
+
+        <div class="card">
+          <h2>Calendars</h2>
+          <div class="toolbar">
+            <div class="field"><input id="calSearch" class="input" placeholder="Search calendars…" /></div>
+            <div class="field">
+              <button id="selectAllCals" class="btn" type="button">Select all</button>
+              <button id="clearAllCals" class="btn" type="button">Clear</button>
+            </div>
+          </div>
+          <div id="calList" class="list"></div>
+          <div id="calEmpty" class="empty hidden">No calendars loaded yet.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-today" class="view hidden">
+      <div class="card">
+        <h2>Today</h2>
+        <div class="toolbar">
+          <div class="field">
+            <span class="badge gold" id="todayLabel">—</span>
+            <span class="badge" id="todayCount">0</span>
+          </div>
+          <div class="field"><button class="btn" id="refreshToday" type="button">Refresh</button></div>
+        </div>
+        <div id="todayList" class="list"></div>
+        <div id="todayEmpty" class="empty hidden">No appointments today.</div>
+      </div>
+    </section>
+
+    <section id="view-all" class="view hidden">
+      <div class="card">
+        <h2>All Appointments</h2>
+        <div class="toolbar">
+          <div class="field">
+            <input id="searchAll" class="input" placeholder="Search (client, notes, location)…" />
+            <select id="statusFilter" class="select">
+              <option value="">All statuses</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="field"><button class="btn" id="refreshAll" type="button">Refresh</button></div>
+        </div>
+        <div id="allList" class="list"></div>
+        <div id="allEmpty" class="empty hidden">No appointments found for the selected range.</div>
+      </div>
+    </section>
+
+    <section id="view-calendar" class="view hidden">
+      <div class="card">
+        <h2>Calendar</h2>
+        <div class="month">
+          <div class="field">
+            <button class="btn" id="prevMonth" type="button">◀</button>
+            <button class="btn" id="goToday" type="button">Today</button>
+            <button class="btn" id="nextMonth" type="button">▶</button>
+          </div>
+          <p class="title" id="monthTitle">—</p>
+        </div>
+
+        <div class="cal-grid" id="dowRow">
+          <div class="dow">Sun</div><div class="dow">Mon</div><div class="dow">Tue</div><div class="dow">Wed</div><div class="dow">Thu</div><div class="dow">Fri</div><div class="dow">Sat</div>
+        </div>
+        <div class="cal-grid" id="monthGrid" style="margin-top:8px;"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <h2 id="dayPanelTitle">Day</h2>
+        <div id="dayList" class="list"></div>
+        <div id="dayEmpty" class="empty hidden">Select a day to preview appointments.</div>
+      </div>
+    </section>
+  </main>
+
+  <button class="fab" id="fab" title="Create appointment">＋</button>
+
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-head">
+        <p class="modal-title" id="modalTitle">New Appointment</p>
+        <button class="close" id="closeModal" type="button">Close</button>
+      </div>
+
+      <form class="form" id="eventForm">
+        <div class="row cols-3">
+          <div>
+            <label>Calendar</label>
+            <select id="fCalendar" class="select" required></select>
+          </div>
+          <div>
+            <label>Status</label>
+            <select id="fStatus" class="select">
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div>
+            <label>Service Type</label>
+            <select id="fService" class="select">
+              <option value="consultation">Consultation</option>
+              <option value="meeting">Meeting</option>
+              <option value="follow-up">Follow-up</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row cols-2">
+          <div>
+            <label>Client Name *</label>
+            <input id="fClient" class="input" placeholder="Client name" required />
+          </div>
+          <div>
+            <label>Location</label>
+            <input id="fLocation" class="input" placeholder="Office / Zoom link / Address" />
+          </div>
+        </div>
+
+        <div class="row cols-3">
+          <div>
+            <label>Date *</label>
+            <input id="fDate" type="date" class="input" required />
+          </div>
+          <div>
+            <label>Start Time *</label>
+            <input id="fTime" type="time" class="input" required />
+          </div>
+          <div>
+            <label>Duration *</label>
+            <select id="fDuration" class="select" required>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60" selected>60 min</option>
+              <option value="90">90 min</option>
+              <option value="120">120 min</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row cols-2">
+          <div>
+            <label>Email</label>
+            <input id="fEmail" type="email" class="input" placeholder="client@email.com" />
+          </div>
+          <div>
+            <label>Phone</label>
+            <input id="fPhone" type="tel" class="input" placeholder="(###) ###-####" />
+          </div>
+        </div>
+
+        <div>
+          <label>Notes</label>
+          <textarea id="fNotes" class="input textarea" placeholder="Add notes…"></textarea>
+        </div>
+
+        <div class="row cols-2">
+          <button type="submit" class="btn primary" id="saveBtn">Save</button>
+          <button type="button" class="btn danger hidden" id="deleteBtn">Delete</button>
+        </div>
+
+        <input type="hidden" id="fEventId" value="">
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="tab active" data-view="dashboard">Dashboard</div>
+      <div class="tab" data-view="today">Today</div>
+      <div class="tab" data-view="all">All</div>
+      <div class="tab" data-view="calendar">Calendar</div>
+    </div>
+  </nav>
+
+  <script>
+    const API = {
+  me:          '/.netlify/functions/me',
+  authStart:   '/.netlify/functions/authStart',
+  calendars:   '/.netlify/functions/calendars',
+  events:      '/.netlify/functions/events',
+  create:      '/.netlify/functions/eventsCreate',
+  update:      '/.netlify/functions/eventsUpdate',
+  del:         '/.netlify/functions/eventsDelete'
+};
+
+    const LS = { view: 'e3.view', selectedCals: 'e3.selectedCalendars' };
+
+    const state = {
+      connected: false,
+      user: null,
+      calendars: [],
+      selectedCalendarIds: new Set(),
+      eventsCache: [],
+      monthCursor: new Date(),
+      daySelected: new Date()
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function toast(msg){
+      const t = $('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      clearTimeout(toast._t);
+      toast._t = setTimeout(()=> t.style.display='none', 2200);
+    }
+
+    function fmtDate(d){
+      const x = new Date(d);
+      return x.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+    }
+    function fmtTime(iso){
+      const d = new Date(iso);
+      return d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+    }
+    function startOfDay(d){ const x = new Date(d); x.setHours(0,0,0,0); return x; }
+    function endOfDay(d){ const x = new Date(d); x.setHours(23,59,59,999); return x; }
+    function startOfWeek(d){ const x = startOfDay(d); const day=x.getDay(); x.setDate(x.getDate()-day); return x; }
+    function endOfWeek(d){ const x=startOfWeek(d); x.setDate(x.getDate()+6); return endOfDay(x); }
+    function startOfMonth(d){ return startOfDay(new Date(d.getFullYear(), d.getMonth(), 1)); }
+    function endOfMonth(d){ return endOfDay(new Date(d.getFullYear(), d.getMonth()+1, 0)); }
+    function toISO(d){ return new Date(d).toISOString(); }
+
+    function durationToEndISO(dateStr, timeStr, minutes){
+      const [hh,mm] = timeStr.split(':').map(Number);
+      const base = new Date(dateStr);
+      base.setHours(hh,mm,0,0);
+      const end = new Date(base.getTime() + minutes*60000);
+      return { start: base.toISOString(), end: end.toISOString() };
+    }
+
+    // Install prompt (no service worker)
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      $('installBtn').classList.remove('hidden');
+    });
+    $('installBtn').addEventListener('click', async () => {
+      if(!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      $('installBtn').classList.add('hidden');
+    });
+
+    // Views
+    function setView(name){
+      const views = ['dashboard','today','all','calendar'];
+      for(const v of views){
+        document.getElementById('view-'+v).classList.toggle('hidden', v !== name);
+      }
+      document.querySelectorAll('.tab').forEach(t=>{
+        t.classList.toggle('active', t.dataset.view === name);
+      });
+      localStorage.setItem(LS.view, name);
+
+      if(name === 'dashboard') loadDashboard();
+      if(name === 'today') loadToday();
+      if(name === 'all') loadAll();
+      if(name === 'calendar') loadMonth(state.monthCursor);
+    }
+    document.querySelectorAll('.tab').forEach(tab=>{
+      tab.addEventListener('click', ()=> setView(tab.dataset.view));
+    });
+
+    // Auth
+    $('connectBtn').addEventListener('click', async () => {
+      if(state.connected){
+        toast('Connected (session cookie).');
+        return;
+      }
+      window.location.href = API.authStart;
+    });
+
+    function parseQuery(){
+      const p = new URLSearchParams(location.search);
+      return Object.fromEntries(p.entries());
+    }
+
+    async function checkSession(){
+      try{
+        const res = await fetch(API.me, { credentials:'include' });
+        if(!res.ok) throw new Error('Not signed in');
+        const data = await res.json();
+        state.user = data.user;
+        state.connected = true;
+      }catch(e){
+        state.user = null;
+        state.connected = false;
+      }
+      renderConnection();
+    }
+
+    function renderConnection(){
+      const dot = $('connDot');
+      const text = $('connText');
+      if(state.connected){
+        dot.classList.add('ok');
+        text.textContent = 'Connected';
+      }else{
+        dot.classList.remove('ok');
+        text.textContent = 'Not connected';
+      }
+    }
+
+    // Calendars
+    function restoreSelectedCalendars(){
+      const raw = localStorage.getItem(LS.selectedCals);
+      if(raw){
+        try{ state.selectedCalendarIds = new Set(JSON.parse(raw)); }catch{}
+      }
+    }
+    function persistSelectedCalendars(){
+      localStorage.setItem(LS.selectedCals, JSON.stringify([...state.selectedCalendarIds]));
+    }
+
+    async function loadCalendars(){
+      if(!state.connected) return;
+      const res = await fetch(API.calendars, { credentials:'include' });
+      if(!res.ok){ toast('Failed to load calendars'); return; }
+      state.calendars = await res.json();
+
+      if(state.selectedCalendarIds.size === 0){
+        state.calendars.forEach(c => state.selectedCalendarIds.add(c.id));
+        persistSelectedCalendars();
+      } else {
+        const valid = new Set(state.calendars.map(c=>c.id));
+        state.selectedCalendarIds = new Set([...state.selectedCalendarIds].filter(id => valid.has(id)));
+        if(state.selectedCalendarIds.size === 0){
+          state.calendars.forEach(c => state.selectedCalendarIds.add(c.id));
+        }
+        persistSelectedCalendars();
+      }
+
+      renderCalendarList();
+      renderCalendarSelect();
+      $('kpiCals').textContent = String(state.selectedCalendarIds.size);
+    }
+
+    function renderCalendarSelect(){
+      const sel = $('fCalendar');
+      sel.innerHTML = '';
+      state.calendars.forEach(c=>{
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.primary ? `${c.summary} (Primary)` : c.summary;
+        sel.appendChild(opt);
+      });
+    }
+
+    function renderCalendarList(){
+      const q = $('calSearch').value.trim().toLowerCase();
+      const list = $('calList');
+      list.innerHTML = '';
+      const filtered = state.calendars.filter(c => !q || (c.summary||'').toLowerCase().includes(q));
+
+      $('calEmpty').classList.toggle('hidden', filtered.length !== 0);
+
+      filtered.forEach(c=>{
+        const div = document.createElement('div');
+        div.className = 'item';
+        const checked = state.selectedCalendarIds.has(c.id);
+        div.innerHTML = `
+          <div class="cal-color" style="background:${c.backgroundColor || '#d4af37'}"></div>
+          <div class="meta">
+            <p class="title">${escapeHtml(c.summary || 'Untitled')}</p>
+            <div class="sub">
+              <span class="badge">${checked ? 'Selected' : 'Hidden'}</span>
+              ${c.primary ? `<span class="badge gold">Primary</span>` : ''}
+            </div>
+          </div>
+        `;
+        div.addEventListener('click', ()=>{
+          if(state.selectedCalendarIds.has(c.id)) state.selectedCalendarIds.delete(c.id);
+          else state.selectedCalendarIds.add(c.id);
+          persistSelectedCalendars();
+          renderCalendarList();
+          $('kpiCals').textContent = String(state.selectedCalendarIds.size);
+          loadDashboard();
+          if(!document.getElementById('view-today').classList.contains('hidden')) loadToday();
+          if(!document.getElementById('view-all').classList.contains('hidden')) loadAll();
+          if(!document.getElementById('view-calendar').classList.contains('hidden')) loadMonth(state.monthCursor);
+        });
+        list.appendChild(div);
+      });
+    }
+    $('calSearch').addEventListener('input', renderCalendarList);
+    $('selectAllCals').addEventListener('click', ()=>{
+      state.calendars.forEach(c=>state.selectedCalendarIds.add(c.id));
+      persistSelectedCalendars();
+      renderCalendarList();
+      $('kpiCals').textContent = String(state.selectedCalendarIds.size);
+      toast('All calendars selected');
+      loadDashboard();
+    });
+    $('clearAllCals').addEventListener('click', ()=>{
+      state.selectedCalendarIds.clear();
+      persistSelectedCalendars();
+      renderCalendarList();
+      $('kpiCals').textContent = '0';
+      toast('Calendars cleared');
+      loadDashboard();
+    });
+
+    // Events
+    async function fetchEvents(timeMin, timeMax){
+      if(!state.connected) return [];
+      const cals = [...state.selectedCalendarIds];
+      if(cals.length === 0) return [];
+      const params = new URLSearchParams({ timeMin, timeMax, calendars: cals.join(',') });
+      const res = await fetch(`${API.events}?${params.toString()}`, { credentials:'include' });
+      if(!res.ok){ toast('Failed to load events'); return []; }
+      return await res.json();
+    }
+
+    function normalizeEvent(e){
+      return {
+        id: e.id,
+        calendarId: e.calendarId,
+        calendarColor: e.calendarColor || '#d4af37',
+        summary: e.summary || 'Untitled',
+        location: e.location || '',
+        description: e.description || '',
+        startISO: e.startISO,
+        endISO: e.endISO,
+        statusTag: e.statusTag || 'pending',
+        serviceType: e.serviceType || 'meeting',
+        clientName: e.clientName || '',
+        clientEmail: e.clientEmail || '',
+        clientPhone: e.clientPhone || ''
+      };
+    }
+
+    async function loadDashboard(){
+      if(!state.connected){
+        $('kpiToday').textContent = '—';
+        $('kpiWeek').textContent  = '—';
+        $('kpiMonth').textContent = '—';
+        $('kpiCals').textContent  = String(state.selectedCalendarIds.size || 0);
+        $('upcomingList').innerHTML = '';
+        $('upcomingEmpty').classList.remove('hidden');
+        $('upcomingEmpty').textContent = 'Connect Google Calendar to load appointments.';
+        return;
+      }
+
+      const now = new Date();
+      const [todayMin, todayMax] = [toISO(startOfDay(now)), toISO(endOfDay(now))];
+      const [weekMin, weekMax]   = [toISO(startOfWeek(now)), toISO(endOfWeek(now))];
+      const [monMin, monMax]     = [toISO(startOfMonth(now)), toISO(endOfMonth(now))];
+
+      const [today, week, month] = await Promise.all([
+        fetchEvents(todayMin, todayMax),
+        fetchEvents(weekMin, weekMax),
+        fetchEvents(monMin, monMax)
+      ]);
+
+      $('kpiToday').textContent = String(today.length);
+      $('kpiWeek').textContent  = String(week.length);
+      $('kpiMonth').textContent = String(month.length);
+      $('kpiCals').textContent  = String(state.selectedCalendarIds.size);
+
+      const upcoming = week
+        .map(normalizeEvent)
+        .filter(e => new Date(e.startISO) >= new Date())
+        .sort((a,b)=> new Date(a.startISO) - new Date(b.startISO))
+        .slice(0,5);
+
+      renderEventList('upcomingList', 'upcomingEmpty', upcoming, { showDate:true });
+    }
+
+    async function loadToday(){
+      if(!state.connected){
+        $('todayLabel').textContent = 'Connect to continue';
+        $('todayCount').textContent = '0';
+        renderEventList('todayList','todayEmpty',[]);
+        return;
+      }
+      const now = new Date();
+      $('todayLabel').textContent = fmtDate(now);
+      const events = (await fetchEvents(toISO(startOfDay(now)), toISO(endOfDay(now)))).map(normalizeEvent);
+      $('todayCount').textContent = String(events.length);
+      renderEventList('todayList','todayEmpty', events.sort((a,b)=> new Date(a.startISO)-new Date(b.startISO)), { showDate:false });
+    }
+    $('refreshToday').addEventListener('click', loadToday);
+
+    async function loadAll(){
+      if(!state.connected){
+        renderEventList('allList','allEmpty',[]);
+        $('allEmpty').classList.remove('hidden');
+        $('allEmpty').textContent = 'Connect Google Calendar to load appointments.';
+        return;
+      }
+      const now = new Date();
+      const min = new Date(now); min.setDate(min.getDate()-30);
+      const max = new Date(now); max.setDate(max.getDate()+60);
+      const events = (await fetchEvents(toISO(startOfDay(min)), toISO(endOfDay(max)))).map(normalizeEvent);
+      state.eventsCache = events;
+      applyAllFilters();
+    }
+    $('refreshAll').addEventListener('click', loadAll);
+    $('searchAll').addEventListener('input', applyAllFilters);
+    $('statusFilter').addEventListener('change', applyAllFilters);
+
+    function applyAllFilters(){
+      const q = $('searchAll').value.trim().toLowerCase();
+      const s = $('statusFilter').value;
+      const filtered = state.eventsCache.filter(e=>{
+        const hay = `${e.summary} ${e.clientName} ${e.location} ${e.description}`.toLowerCase();
+        const okQ = !q || hay.includes(q);
+        const okS = !s || e.statusTag === s;
+        return okQ && okS;
+      }).sort((a,b)=> new Date(a.startISO)-new Date(b.startISO));
+      renderEventList('allList','allEmpty', filtered, { showDate:true });
+    }
+
+    $('prevMonth').addEventListener('click', ()=>{ state.monthCursor = new Date(state.monthCursor.getFullYear(), state.monthCursor.getMonth()-1, 1); loadMonth(state.monthCursor); });
+    $('nextMonth').addEventListener('click', ()=>{ state.monthCursor = new Date(state.monthCursor.getFullYear(), state.monthCursor.getMonth()+1, 1); loadMonth(state.monthCursor); });
+    $('goToday').addEventListener('click', ()=>{ state.monthCursor = new Date(); loadMonth(state.monthCursor); selectDay(new Date()); });
+
+    async function loadMonth(cursor){
+      $('monthTitle').textContent = cursor.toLocaleDateString(undefined, { month:'long', year:'numeric' });
+
+      if(!state.connected){
+        $('monthGrid').innerHTML = '';
+        $('dayEmpty').classList.remove('hidden');
+        $('dayEmpty').textContent = 'Connect Google Calendar to view month.';
+        return;
+      }
+
+      const min = startOfMonth(cursor);
+      const max = endOfMonth(cursor);
+      const gridStart = startOfWeek(min);
+      const gridEnd = endOfWeek(max);
+
+      const raw = await fetchEvents(toISO(gridStart), toISO(gridEnd));
+      const events = raw.map(normalizeEvent);
+
+      renderMonthGrid(gridStart, gridEnd, events);
+      selectDay(state.daySelected || new Date());
+      updateDayPanel(events, state.daySelected);
+    }
+
+    function renderMonthGrid(gridStart, gridEnd, events){
+      const grid = $('monthGrid');
+      grid.innerHTML = '';
+      const days = [];
+      const cur = new Date(gridStart);
+      while(cur <= gridEnd){ days.push(new Date(cur)); cur.setDate(cur.getDate()+1); }
+
+      for(const d of days){
+        const dayEvents = events.filter(e => new Date(e.startISO).toDateString() === d.toDateString()).slice(0,6);
+        const cell = document.createElement('div');
+        cell.className = 'day';
+        cell.style.opacity = d.getMonth() === state.monthCursor.getMonth() ? '1' : '.55';
+        const dots = dayEvents.map(ev=> `<span class="dot" style="background:${ev.calendarColor}"></span>`).join('');
+        cell.innerHTML = `<div class="n">${d.getDate()}</div><div class="dots">${dots}</div>`;
+        cell.addEventListener('click', ()=>{ selectDay(d); updateDayPanel(events, d); });
+        grid.appendChild(cell);
+      }
+    }
+
+    function selectDay(d){ state.daySelected = new Date(d); $('dayPanelTitle').textContent = `Day • ${fmtDate(d)}`; }
+
+    function updateDayPanel(events, day){
+      const items = events
+        .filter(e => new Date(e.startISO).toDateString() === new Date(day).toDateString())
+        .sort((a,b)=> new Date(a.startISO)-new Date(b.startISO));
+      renderEventList('dayList','dayEmpty', items, { showDate:false });
+    }
+
+    function renderEventList(listId, emptyId, events, { showDate } = { showDate:false }){
+      const list = document.getElementById(listId);
+      const empty = document.getElementById(emptyId);
+      list.innerHTML = '';
+      empty.classList.toggle('hidden', events.length !== 0);
+
+      events.forEach(e=>{
+        const statusBadge = statusToBadge(e.statusTag);
+        const when = showDate ? `${fmtDate(e.startISO)} • ${fmtTime(e.startISO)}–${fmtTime(e.endISO)}` : `${fmtTime(e.startISO)}–${fmtTime(e.endISO)}`;
+        const title = e.clientName ? `${e.clientName} — ${e.serviceType}` : e.summary;
+        const sub = [when, e.location ? `📍 ${e.location}` : '', statusBadge].filter(Boolean);
+
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <div class="cal-color" style="background:${e.calendarColor}"></div>
+          <div class="meta">
+            <p class="title">${escapeHtml(title)}</p>
+            <div class="sub">${sub.map(x => x.startsWith('<span') ? x : `<span>${escapeHtml(x)}</span>`).join('')}</div>
+          </div>
+        `;
+        div.addEventListener('click', ()=> openEditModal(e));
+        list.appendChild(div);
+      });
+    }
+
+    function statusToBadge(status){
+      const s = (status||'pending').toLowerCase();
+      if(s === 'confirmed') return `<span class="badge ok">Confirmed</span>`;
+      if(s === 'cancelled') return `<span class="badge danger">Cancelled</span>`;
+      return `<span class="badge warn">Pending</span>`;
+    }
+
+    // Modal
+    $('fab').addEventListener('click', ()=> openCreateModal());
+    $('closeModal').addEventListener('click', closeModal);
+    $('modalBackdrop').addEventListener('click', (e)=>{ if(e.target === $('modalBackdrop')) closeModal(); });
+
+    function openCreateModal(date = new Date()){
+      if(!state.connected){ toast('Connect Google Calendar first'); return; }
+      $('modalTitle').textContent = 'New Appointment';
+      $('deleteBtn').classList.add('hidden');
+      $('fEventId').value = '';
+      $('fClient').value = '';
+      $('fEmail').value = '';
+      $('fPhone').value = '';
+      $('fNotes').value = '';
+      $('fLocation').value = '';
+      $('fStatus').value = 'pending';
+      $('fService').value = 'consultation';
+
+      const d = state.daySelected || date;
+      $('fDate').value = new Date(d).toISOString().slice(0,10);
+      $('fTime').value = '09:00';
+      $('fDuration').value = '60';
+
+      const firstSel = [...state.selectedCalendarIds][0] || (state.calendars[0] && state.calendars[0].id);
+      if(firstSel) $('fCalendar').value = firstSel;
+
+      showModal();
+    }
+
+    function openEditModal(e){
+      if(!state.connected){ toast('Connect Google Calendar first'); return; }
+      $('modalTitle').textContent = 'Edit Appointment';
+      $('deleteBtn').classList.remove('hidden');
+
+      $('fEventId').value = e.id;
+      $('fCalendar').value = e.calendarId;
+      $('fStatus').value = e.statusTag || 'pending';
+      $('fService').value = e.serviceType || 'meeting';
+
+      $('fClient').value = e.clientName || '';
+      $('fEmail').value = e.clientEmail || '';
+      $('fPhone').value = e.clientPhone || '';
+      $('fNotes').value = e.description || '';
+      $('fLocation').value = e.location || '';
+
+      const sd = new Date(e.startISO);
+      $('fDate').value = sd.toISOString().slice(0,10);
+      $('fTime').value = sd.toTimeString().slice(0,5);
+
+      const mins = Math.round((new Date(e.endISO)-new Date(e.startISO))/60000);
+      $('fDuration').value = ['15','30','45','60','90','120'].includes(String(mins)) ? String(mins) : '60';
+
+      showModal();
+    }
+
+    function showModal(){ $('modalBackdrop').style.display = 'flex'; }
+    function closeModal(){ $('modalBackdrop').style.display = 'none'; }
+
+    $('eventForm').addEventListener('submit', async (ev)=>{
+      ev.preventDefault();
+      const id = $('fEventId').value.trim();
+      const dateStr = $('fDate').value;
+      const timeStr = $('fTime').value;
+      const duration = parseInt($('fDuration').value, 10);
+      const { start, end } = durationToEndISO(dateStr, timeStr, duration);
+
+      const payload = {
+        id: id || undefined,
+        calendarId: $('fCalendar').value,
+        clientName: $('fClient').value.trim(),
+        clientEmail: $('fEmail').value.trim(),
+        clientPhone: $('fPhone').value.trim(),
+        serviceType: $('fService').value,
+        statusTag: $('fStatus').value,
+        location: $('fLocation').value.trim(),
+        notes: $('fNotes').value.trim(),
+        startISO: start,
+        endISO: end
+      };
+
+      if(!payload.clientName){ toast('Client name is required'); return; }
+
+      try{
+        const url = id ? API.update : API.create;
+        const res = await fetch(url, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          credentials:'include',
+          body: JSON.stringify(payload)
+        });
+        if(!res.ok) throw new Error('Save failed');
+        closeModal();
+        toast(id ? 'Appointment updated' : 'Appointment created');
+        const currentView = localStorage.getItem(LS.view) || 'dashboard';
+        if(currentView==='dashboard') loadDashboard();
+        if(currentView==='today') loadToday();
+        if(currentView==='all') loadAll();
+        if(currentView==='calendar') loadMonth(state.monthCursor);
+      }catch(e){
+        console.error(e);
+        toast('Could not save appointment (create/update endpoints are placeholders)');
+      }
+    });
+
+    $('deleteBtn').addEventListener('click', async ()=>{
+      const id = $('fEventId').value.trim();
+      const calendarId = $('fCalendar').value;
+      if(!id) return;
+      if(!confirm('Delete this appointment?')) return;
+      try{
+        const res = await fetch(API.del, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          credentials:'include',
+          body: JSON.stringify({ id, calendarId })
+        });
+        if(!res.ok) throw new Error('Delete failed');
+        closeModal();
+        toast('Appointment deleted');
+        const currentView = localStorage.getItem(LS.view) || 'dashboard';
+        if(currentView==='dashboard') loadDashboard();
+        if(currentView==='today') loadToday();
+        if(currentView==='all') loadAll();
+        if(currentView==='calendar') loadMonth(state.monthCursor);
+      }catch(e){
+        console.error(e);
+        toast('Could not delete appointment (delete endpoint is placeholder)');
+      }
+    });
+
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, s => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[s]));
+    }
+
+    (async function init(){
+      restoreSelectedCalendars();
+      const q = parseQuery();
+      const initialView = q.view || localStorage.getItem(LS.view) || 'dashboard';
+
+      await checkSession();
+      if(state.connected){
+        await loadCalendars();
+        await loadDashboard();
+      } else {
+        $('kpiCals').textContent = String(state.selectedCalendarIds.size || 0);
+      }
+
+      state.monthCursor = new Date();
+      state.daySelected = new Date();
+      setView(initialView);
+
+      if(q.auth === 'success') toast('Google Calendar connected');
+      if(q.auth === 'needs_reconnect') toast('Reconnect required to get refresh token');
+    })();
+  </script>
+</body>
+</html>
