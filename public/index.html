@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#111111" />
-  <title>E³ Calendar Manager</title>
+  <title><span class="brand-title"><span class="brand-mark">E³</span><span>E³ Calendar Manager</span></span></title>
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.webmanifest">
@@ -25,52 +25,27 @@
   <link rel="apple-touch-startup-image" href="/splash/apple-splash-1179-2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
 
   <style>
-
-.topbar{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 16px; margin: 14px; }
-.topbar-left{ display:flex; align-items:center; gap:12px; }
-.topbar-right{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
-
-
-
-/* --- UI match (reference) --- */
-:root{
-  --e3-black:#1a1a1a;
-  --e3-gold:#d4af37;
-  --e3-gray:#2d2d2d;
-  --e3-cream:#f5f5f0;
-  --e3-pill:#3a3a3a;
+.brand-title{display:flex; align-items:center; gap:10px;}
+.brand-mark{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px;
+  background: var(--e3-gold, #d4af37);
+  color:#1a1a1a;
+  border-radius:10px;
+  font-weight:900;
 }
-.topbar{
-  border-radius: 999px !important;
-  background: linear-gradient(180deg, var(--e3-black), var(--e3-gray)) !important;
-  border: 1px solid rgba(212,175,55,0.35) !important;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.25) !important;
-}
-.topbar .logo{
-  width:44px; height:44px; border-radius: 14px; overflow:hidden;
-  border: 2px solid rgba(212,175,55,0.55);
-}
-.topbar .title{
-  font-size: 20px; font-weight: 800; color: #fff;
-}
-.topbar .subtitle{
-  font-size: 12px; opacity: .8; color:#fff;
-}
-.pill{
-  border-radius: 999px;
-  padding: 10px 14px;
-  background: rgba(255,255,255,0.10);
+.badge-conn{
+  border-radius:999px;
+  padding:8px 12px;
+  background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.10);
   color: #fff;
   font-weight: 700;
-  display:inline-flex; align-items:center; gap:8px;
 }
-.pill.dark{ background: rgba(255,255,255,0.10); }
-.pill.light{ background: var(--e3-cream); color: var(--e3-black); border-color: rgba(0,0,0,0.12); }
-.pill.gold{ background: var(--e3-gold); color: var(--e3-black); border-color: rgba(0,0,0,0.12); }
-.pill.gray{ background: rgba(255,255,255,0.18); color: #111; border-color: rgba(0,0,0,0.10);}
-.pill.disconnect{ background: rgba(255,255,255,0.16); color: #b91c1c; border-color: rgba(185,28,28,0.25); }
-
+.badge-conn.connected{
+  background: rgba(212,175,55,0.22);
+  border-color: rgba(212,175,55,0.45);
+}
 
 .shell{ display:grid; grid-template-columns: 360px 1fr; gap:18px; align-items:start; }
 .sidebar{ background: var(--card); border:1px solid rgba(0,0,0,.08); border-radius:24px; padding:18px; min-height: calc(100vh - 160px); }
@@ -390,25 +365,27 @@
 
 <body>
   <header class="topbar">
-      <div class="topbar-left">
-        <img class="logo" src="/icons/e3-icon-192.png" alt="E³ Leadership">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
         <div>
-          <div class="title">E³ Calendar Manager</div>
-          <div class="subtitle">E3-Leadership.com</div>
+          <h1>E³ Calendar Manager</h1>
+          <span class="sub"> • Google Calendar control</span>
         </div>
       </div>
 
-      <div class="topbar-right">
-        <span id="badgeOnline" class="pill dark">Online</span>
-        <span id="connBadge" class="pill dark">Not connected</span>
-        <button id="btnInstall" class="pill light" style="display:none">⬇ Install App</button>
-        <button id="btnReminders" class="pill light">🔔 Reminders</button>
-        <button id="btnConnect" class="pill gold">Connect Google</button>
-        <button id="btnRefreshTop" class="pill gray">Refresh</button>
-        <button id="btnNewTop" class="pill gray">+ New Appointment</button>
-        <button id="btnLogout" class="pill disconnect">Disconnect</button>
+      <div class="actions">
+        <span class="badge-pill" id="pillOnline">Online</span>
+        <span class="badge-pill status-pill" id="statusPill"><span id="connBadge" class="badge-conn">Not connected</span></span>
+        <button id="btnReminders" class="pill btn-pill btn-warn" type="button">🔔 Reminders</button>
+          <button id="btnInstall" class="btn btn-pill">⬇ Install App</button>
+        <button id="btnConnect" class="pill btn-pill gold" type="button" title="Connect Google">Connect Google</button>
+        <button id="btnRefreshTop" class="pill btn-pill secondary" type="button">Refresh</button>
+        <button id="btnNewTop" class="pill btn-pill secondary" type="button">+ New Appointment</button>
+        <button id="btnLogout" class="pill btn-pill danger" type="button">Disconnect</button>
       </div>
-    </header>
+    </div>
+  </header>
 
 
   <main class="wrap">
@@ -674,7 +651,9 @@
 
     const $ = (id) => document.getElementById(id);
 
-    function toast(msg){
+    
+    const on = (id, evt, fn) => { const el = $(id); if (el) el.addEventListener(evt, fn); };
+function toast(msg){
       const t = $('toast');
       t.textContent = msg;
       t.style.display = 'block';
@@ -868,7 +847,7 @@
         list.appendChild(div);
       });
     }
-    $('calSearch').addEventListener('input', renderCalendarList);
+    on('calSearch', 'input', renderCalendarList);
     $('selectAllCals').addEventListener('click', ()=>{
       state.calendars.forEach(c=>state.selectedCalendarIds.add(c.id));
       persistSelectedCalendars();
@@ -965,7 +944,7 @@
       $('todayCount').textContent = String(events.length);
       renderEventList('todayList','todayEmpty', events.sort((a,b)=> new Date(a.startISO)-new Date(b.startISO)), { showDate:false });
     }
-    $('refreshToday').addEventListener('click', loadToday);
+    on('refreshToday', 'click', loadToday);
 
     async function loadAll(){
       if(!state.connected){
@@ -981,9 +960,9 @@
       state.eventsCache = events;
       applyAllFilters();
     }
-    $('refreshAll').addEventListener('click', loadAll);
-    $('searchAll').addEventListener('input', applyAllFilters);
-    $('statusFilter').addEventListener('change', applyAllFilters);
+    on('refreshAll', 'click', loadAll);
+    on('searchAll', 'input', applyAllFilters);
+    on('statusFilter', 'change', applyAllFilters);
 
     function applyAllFilters(){
       const q = $('searchAll').value.trim().toLowerCase();
@@ -1087,7 +1066,7 @@
 
     // Modal
     $('fab').addEventListener('click', ()=> openCreateModal());
-    $('closeModal').addEventListener('click', closeModal);
+    on('closeModal', 'click', closeModal);
     $('modalBackdrop').addEventListener('click', (e)=>{ if(e.target === $('modalBackdrop')) closeModal(); });
 
     function openCreateModal(date = new Date()){
@@ -1284,62 +1263,100 @@ async function enablePush(){
   }
 }
 
-</script>
 
-<script>
-/* __e3_ui_bind */
-let __deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  __deferredPrompt = e;
-  const b = document.getElementById('btnInstall');
-  if (b) b.style.display = 'inline-flex';
-});
-
-async function promptInstall(){
-  if (!__deferredPrompt) {
-    if (typeof toast === "function") toast("Install not available on this browser.", "warn");
-    return;
-  }
-  __deferredPrompt.prompt();
-  await __deferredPrompt.userChoice;
-  __deferredPrompt = null;
+function __e3Connect(){
+  window.location.href = API.authStart;
 }
-
+</script>
+<script>
+/* btnConnect_bind */
+(()=>{
+  const c=document.getElementById('btnConnect');
+  if(c) c.addEventListener('click', (e)=>{ e.preventDefault(); __e3Connect(); });
+})();
+</script>
+<script>
+/* __connBadgeUpdater */
 async function updateConnBadge(){
   const el = document.getElementById('connBadge');
-  if (!el) return;
+  if(!el) return;
   try{
     const me = await fetch(API.me, { credentials: "include" }).then(r=>r.json());
-    if (me && me.ok) el.textContent = "Connected";
-    else el.textContent = "Not connected";
+    if(me && me.ok){
+      el.textContent = "Connected";
+      el.classList.add("connected");
+    } else {
+      el.textContent = "Not connected";
+      el.classList.remove("connected");
+    }
   } catch(e){
     el.textContent = "Not connected";
+    el.classList.remove("connected");
   }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  const btnConnectTop = document.getElementById('btnConnect');
-  const btnRefreshTop = document.getElementById('btnRefreshTop');
-  const btnNewTop = document.getElementById('btnNewTop');
-  const btnLogout = document.getElementById('btnLogout');
-  const btnInstall = document.getElementById('btnInstall');
-  const btnReminders = document.getElementById('btnReminders');
-
-  if (btnConnectTop) btnConnectTop.addEventListener('click', () => { window.location.href = API.authStart; });
-  if (btnRefreshTop) btnRefreshTop.addEventListener('click', () => location.reload());
-  if (btnNewTop) btnNewTop.addEventListener('click', () => { if (typeof openCreateModal === "function") openCreateModal(); });
-  if (btnLogout) btnLogout.addEventListener('click', async () => {
-    try { await fetch(API.logout, { credentials: 'include' }); } catch(e) {}
-    location.reload();
-  });
-  if (btnInstall) btnInstall.addEventListener('click', promptInstall);
-  if (btnReminders) btnReminders.addEventListener('click', () => { if (typeof enablePush === "function") enablePush(); });
-
-  updateConnBadge();
-  setInterval(updateConnBadge, 15000);
-});
+document.addEventListener("DOMContentLoaded", ()=>{ updateConnBadge(); setInterval(updateConnBadge, 15000); });
 </script>
-
 </body>
 </html>
+
+    // Topbar buttons (screenshot layout)
+    const btnConnectTop = document.getElementById('btnConnect');
+    const btnRefreshTop = document.getElementById('btnRefreshTop');
+    const btnNewTop = document.getElementById('btnNewTop');
+    const btnLogout = document.getElementById('btnLogout');
+
+    if(btnConnectTop){
+      btnConnectTop.addEventListener('click', async () => {
+        if(state.connected){ toast('Connected (session cookie).'); return; }
+        window.location.href = API.authStart;
+      });
+    }
+    if(btnRefreshTop){ btnRefreshTop.addEventListener('click', () => loadAll()); }
+    if(btnNewTop){ btnNewTop.addEventListener('click', () => openCreateModal()); }
+    if(btnLogout){
+      btnLogout.addEventListener('click', async () => {
+        try{ await fetch(API.logout, { credentials:'include' }); }catch(e){}
+        // client cleanup
+        state.connected = false; state.user = null;
+        localStorage.removeItem(LS.selectedCals);
+        renderConnection();
+        toast('Disconnected.', 'success');
+      });
+    }
+
+    // Sidebar collapse
+    const sideToggle = document.getElementById('sideToggle');
+    const sidebar = document.getElementById('sidebar');
+    function setSidebarCollapsed(v){
+      if(!sidebar) return;
+      sidebar.classList.toggle('collapsed', v);
+      localStorage.setItem('E3_sidebar_collapsed', v ? '1' : '0');
+      if(sideToggle) sideToggle.textContent = v ? '⟩' : '⟨';
+    }
+    if(sideToggle){
+      sideToggle.addEventListener('click', ()=>{
+        const v = !sidebar.classList.contains('collapsed');
+        setSidebarCollapsed(v);
+      });
+      setSidebarCollapsed(localStorage.getItem('E3_sidebar_collapsed')==='1');
+    }
+
+    // Sidebar global filters
+    const globalSearch = document.getElementById('globalSearch');
+    const globalStatus = document.getElementById('globalStatus');
+    if(globalSearch){
+      globalSearch.addEventListener('input', ()=>{
+        state.search = globalSearch.value.trim();
+        renderAll();
+        renderToday();
+        renderUpcoming();
+      });
+    }
+    if(globalStatus){
+      globalStatus.addEventListener('change', ()=>{
+        state.statusFilter = globalStatus.value;
+        renderAll();
+        renderToday();
+        renderUpcoming();
+      });
+    }
