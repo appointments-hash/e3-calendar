@@ -90,8 +90,8 @@
     }
     .pill:active{ transform: scale(.98); background: rgba(245,158,11,.28); }
     .pill.secondary{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.06);
+      border:1px solid rgba(45,64,89,.8);
+      background: rgba(29,45,71,.6);
     }
     .status-dot{
       width:8px; height:8px; border-radius:99px;
@@ -108,12 +108,12 @@
     }
     .card{
       background: linear-gradient(to bottom, rgba(22,34,56,.98), rgba(16,26,42,.98));
-      border:1px solid rgba(245,158,11,.12);
+      border:1px solid rgba(45,64,89,.6);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding:14px;
     }
-    .card h2{ margin:0 0 10px; font-size:14px; letter-spacing:.3px; color: rgba(255,255,255,.92); }
+    .card h2{ margin:0 0 10px; font-size:14px; letter-spacing:.3px; color: rgba(245,245,245,.95); }
     .kpis{ display:grid; gap:12px; grid-template-columns: repeat(2,1fr); }
     @media(min-width:620px){ .kpis{ grid-template-columns: repeat(4,1fr);} }
     .kpi{
@@ -140,7 +140,7 @@
     .cal-color{
       width:10px; height:10px; border-radius:99px;
       margin-top:4px; flex:0 0 auto;
-      box-shadow: 0 0 0 3px rgba(255,255,255,.06);
+      box-shadow: 0 0 0 3px rgba(29,45,71,.6);
     }
     .item .meta{ flex:1; }
     .item .title{ font-size:14px; margin:0; }
@@ -154,8 +154,8 @@
       font-size:11px;
       padding:4px 8px;
       border-radius:999px;
-      border:1px solid rgba(148,163,184,.25);
-      background: rgba(148,163,184,.12);
+      border:1px solid rgba(45,64,89,.8);
+      background: rgba(29,45,71,.6);
     }
     .badge.gold{ border-color: rgba(245,158,11,.4); background: rgba(245,158,11,.16); color: #fbbf24; }
     .badge.ok{ border-color: rgba(16,185,129,.3); background: rgba(16,185,129,.14); color: #34d399; }
@@ -183,7 +183,7 @@
       padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
       background: rgba(10,22,40,.92);
       backdrop-filter: blur(14px);
-      border-top:1px solid rgba(245,158,11,.15);
+      border-top:1px solid rgba(45,64,89,.6);
     }
     .nav-inner{
       max-width: var(--maxw);
@@ -204,7 +204,7 @@
     }
     .tab.active{
       border-color: rgba(245,158,11,.5);
-      background: rgba(245,158,11,.18);
+      background: rgba(245,158,11,.16);
       color: rgba(251,191,36,1);
     }
     .fab{
@@ -233,8 +233,8 @@
       max-width: var(--maxw);
       margin: 0 auto;
       border-radius: 22px 22px 0 0;
-      background: linear-gradient(to bottom, rgba(22,34,56,.98), rgba(16,26,42,.98));
-      border:1px solid rgba(245,158,11,.15);
+      background: linear-gradient(to bottom, rgba(18,18,18,.98), rgba(12,12,12,.98));
+      border:1px solid rgba(45,64,89,.8);
       padding:14px 14px 18px;
       box-shadow: 0 25px 60px rgba(0,0,0,.65);
     }
@@ -292,11 +292,11 @@
       left:50%; transform: translateX(-50%);
       bottom: 86px;
       z-index:80;
-      background: rgba(22,34,56,.95);
+      background: rgba(18,18,18,.92);
       border:1px solid rgba(245,158,11,.3);
       padding:10px 12px;
       border-radius: 14px;
-      box-shadow: 0 16px 40px rgba(0,0,0,.6);
+      box-shadow: 0 16px 40px rgba(0,0,0,.5);
       display:none;
       max-width: 92vw;
       color: rgba(245,245,245,.95);
@@ -531,6 +531,7 @@
     const API = {
   me:          '/.netlify/functions/me',
   authStart:   '/.netlify/functions/authStart',
+  logout:      '/.netlify/functions/logout',
   calendars:   '/.netlify/functions/calendars',
   events:      '/.netlify/functions/events',
   create:      '/.netlify/functions/eventsCreate',
@@ -622,7 +623,35 @@
     // Auth
     $('connectBtn').addEventListener('click', async () => {
       if(state.connected){
-        toast('Connected (session cookie).');
+        // Disconnect/logout functionality
+        if(!confirm('Disconnect from Google Calendar? This will sign you out.')) return;
+        try {
+          // Call logout endpoint if it exists
+          await fetch(API.logout || '/.netlify/functions/logout', { 
+            method: 'POST',
+            credentials:'include' 
+          }).catch(() => {});
+          
+          // Clear local state
+          state.connected = false;
+          state.user = null;
+          state.calendars = [];
+          state.events = [];
+          state.selectedCalendarIds.clear();
+          localStorage.removeItem(LS.selectedCals);
+          
+          // Update UI
+          renderConnection();
+          $('kpiCals').textContent = '0';
+          
+          toast('Disconnected from Google Calendar');
+          
+          // Optionally reload to clear everything
+          setTimeout(() => window.location.reload(), 1000);
+        } catch(e) {
+          console.error(e);
+          toast('Error disconnecting. Try clearing your browser cookies.');
+        }
         return;
       }
       window.location.href = API.authStart;
@@ -650,12 +679,15 @@
     function renderConnection(){
       const dot = $('connDot');
       const text = $('connText');
+      const btn = $('connectBtn');
       if(state.connected){
         dot.classList.add('ok');
         text.textContent = 'Connected';
+        btn.title = 'Disconnect from Google Calendar';
       }else{
         dot.classList.remove('ok');
         text.textContent = 'Not connected';
+        btn.title = 'Connect Google Calendar';
       }
     }
 
