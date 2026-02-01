@@ -138,7 +138,11 @@ export const handler = async (event) => {
       description: buildDescription(body.notes || "", meta),
       start: { dateTime: startISO },
       end: { dateTime: endISO },
-      extendedProperties: { private: buildE3Private(meta) }
+      extendedProperties: { private: buildE3Private(meta) },
+      reminders: { useDefault: false, overrides: [
+        { method: 'popup', minutes: 1440 },
+        { method: 'popup', minutes: 60 }
+      ] }
     };
 
     const created = await calendar.events.insert({
