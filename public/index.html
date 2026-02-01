@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#111111" />
-  <title>E³ Calendar Manager</title>
+  <title><span class="brand-title"><span class="brand-mark">E³</span><span>E³ Calendar Manager</span></span></title>
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.webmanifest">
@@ -25,6 +25,28 @@
   <link rel="apple-touch-startup-image" href="/splash/apple-splash-1179-2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
 
   <style>
+.brand-title{display:flex; align-items:center; gap:10px;}
+.brand-mark{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px;
+  background: var(--e3-gold, #d4af37);
+  color:#1a1a1a;
+  border-radius:10px;
+  font-weight:900;
+}
+.badge-conn{
+  border-radius:999px;
+  padding:8px 12px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: #fff;
+  font-weight: 700;
+}
+.badge-conn.connected{
+  background: rgba(212,175,55,0.22);
+  border-color: rgba(212,175,55,0.45);
+}
+
 .shell{ display:grid; grid-template-columns: 360px 1fr; gap:18px; align-items:start; }
 .sidebar{ background: var(--card); border:1px solid rgba(0,0,0,.08); border-radius:24px; padding:18px; min-height: calc(100vh - 160px); }
 .sidebar.collapsed{ width:72px; padding:18px 10px; overflow:hidden; }
@@ -348,14 +370,15 @@
         <div class="logo" aria-hidden="true"></div>
         <div>
           <h1>E³ Calendar Manager</h1>
-          <span class="sub">Black & Gold • Google Calendar control</span>
+          <span class="sub"> • Google Calendar control</span>
         </div>
       </div>
 
       <div class="actions">
         <span class="badge-pill" id="pillOnline">Online</span>
-        <span class="badge-pill status-pill" id="statusPill">Not connected</span>
+        <span class="badge-pill status-pill" id="statusPill"><span id="connBadge" class="badge-conn">Not connected</span></span>
         <button id="btnReminders" class="pill btn-pill btn-warn" type="button">🔔 Reminders</button>
+          <button id="btnInstall" class="btn btn-pill">⬇ Install App</button>
         <button id="btnConnect" class="pill btn-pill gold" type="button" title="Connect Google">Connect Google</button>
         <button id="btnRefreshTop" class="pill btn-pill secondary" type="button">Refresh</button>
         <button id="btnNewTop" class="pill btn-pill secondary" type="button">+ New Appointment</button>
@@ -1238,6 +1261,38 @@ async function enablePush(){
   }
 }
 
+
+function __e3Connect(){
+  window.location.href = API.authStart;
+}
+</script>
+<script>
+/* btnConnect_bind */
+(()=>{
+  const c=document.getElementById('btnConnect');
+  if(c) c.addEventListener('click', (e)=>{ e.preventDefault(); __e3Connect(); });
+})();
+</script>
+<script>
+/* __connBadgeUpdater */
+async function updateConnBadge(){
+  const el = document.getElementById('connBadge');
+  if(!el) return;
+  try{
+    const me = await fetch(API.me, { credentials: "include" }).then(r=>r.json());
+    if(me && me.ok){
+      el.textContent = "Connected";
+      el.classList.add("connected");
+    } else {
+      el.textContent = "Not connected";
+      el.classList.remove("connected");
+    }
+  } catch(e){
+    el.textContent = "Not connected";
+    el.classList.remove("connected");
+  }
+}
+document.addEventListener("DOMContentLoaded", ()=>{ updateConnBadge(); setInterval(updateConnBadge, 15000); });
 </script>
 </body>
 </html>
